@@ -278,7 +278,50 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);
     <p id="reg-hero-sub">أنشئ حسابك لتبدأ رحلتك المالية الذكية</p>
   </div>
   <div id="reg-body-area" class="reg-body">
-    <!-- Rendered by renderRegisterForm() in app.js -->
+    <div class="reg-step" id="reg-step-txt">إعداد الحساب — يستغرق أقل من دقيقة</div>
+    <h2 id="reg-heading-txt">أهلاً! أخبرنا عنك 👋</h2>
+
+    <div class="form-group">
+      <label id="reg-name-label">👤 اسمك <span style="color:var(--red);font-size:.8rem">*</span></label>
+      <input type="text" id="r-name" placeholder="اسم المستخدم" autocomplete="name">
+    </div>
+
+    <div class="form-group">
+      <label><span id="reg-income-label">💰 دخلك الشهري</span>
+        <span id="reg-income-opt" style="color:var(--muted);font-weight:600;font-size:.75rem"> — اختياري</span>
+      </label>
+      <input type="number" id="r-income" placeholder="يمكن إضافته لاحقاً" min="0" step="50">
+    </div>
+
+    <div class="form-group">
+      <label><span id="reg-email-label">📧 بريدك الإلكتروني</span>
+        <span id="reg-email-opt" style="color:var(--muted);font-weight:600;font-size:.75rem"> — اختياري، مطلوب لاستعادة رمز PIN</span>
+      </label>
+      <input type="email" id="r-email" placeholder="example@email.com" autocomplete="email" style="direction:ltr;text-align:right">
+    </div>
+
+    <div class="form-group">
+      <label id="reg-lang-label">🌐 اللغة</label>
+      <div class="opt-group" id="lang-grid">
+        <button class="opt-btn selected" data-val="ar" onclick="selectOpt(this,'lang')">🇸🇦 عربي</button>
+        <button class="opt-btn" data-val="de" onclick="selectOpt(this,'lang')">🇩🇪 Deutsch</button>
+        <button class="opt-btn" data-val="en" onclick="selectOpt(this,'lang')">🇬🇧 English</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label id="reg-cur-label">💱 العملة</label>
+      <div class="opt-group" id="cur-grid">
+        <button class="opt-btn selected" data-val="€" onclick="selectOpt(this,'cur')">€ يورو</button>
+        <button class="opt-btn" data-val="$" onclick="selectOpt(this,'cur')">$ دولار</button>
+        <button class="opt-btn" data-val="£" onclick="selectOpt(this,'cur')">£ جنيه</button>
+        <button class="opt-btn" data-val="﷼" onclick="selectOpt(this,'cur')">﷼ ريال</button>
+        <button class="opt-btn" data-val="د.إ" onclick="selectOpt(this,'cur')">د.إ درهم</button>
+        <button class="opt-btn" data-val="TL" onclick="selectOpt(this,'cur')">TL ليرة</button>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="reg-start-btn" onclick="completeRegister()">🚀 ابدأ رحلتي المالية</button>
   </div>
 </div>
 
