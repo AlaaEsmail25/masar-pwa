@@ -37,6 +37,225 @@ function calcGoalsPct(){ if(!state.goals.length)return 0; return Math.round(stat
 function metricToSub(t){ return{المصاريف:'expense',المدخرات:'saving',الأهداف:'goal',الديون:'debt',الاستثمارات:'investment'}[t]||'expense'; }
 
 
+
+// ══════════════════════════════════════════════════════════
+//  APP-WIDE i18n — Full UI Translations
+// ══════════════════════════════════════════════════════════
+const APP_T = {
+  ar: {
+    dir:'rtl', fontDir:'rtl',
+    // Bottom nav
+    nav_home:'الرئيسية', nav_reports:'التقارير', nav_add:'إضافة',
+    nav_tips:'نصائح', nav_account:'حسابي',
+    // Home
+    available_balance:'الرصيد المتاح',
+    from_total:'من إجمالي',
+    expenses:'المصاريف',
+    transactions_this_month:'معاملة هذا الشهر',
+    savings:'المدخرات',
+    savings_buckets:'أوعية ادخارية',
+    goals:'الأهداف',
+    goals_completed:'هدف — %s% مكتمل',
+    debts:'الديون',
+    active_loan:'قرض واحد نشط',
+    investments:'الاستثمارات',
+    active_portfolio:'محفظة نشطة',
+    // Settings
+    settings:'⚙️ الإعدادات',
+    personal_info:'👤 المعلومات الشخصية',
+    preferences:'🎨 التفضيلات',
+    language:'🌐 اللغة',
+    currency:'💱 العملة',
+    dark_mode:'🌙 الوضع الليلي',
+    notifications:'🔔 الإشعارات',
+    budget_alerts:'📊 تنبيهات الميزانية',
+    pin_security:'🔒 رمز PIN',
+    pin_enable:'تفعيل',
+    pin_disable:'إيقاف',
+    email_section:'📧 البريد الإلكتروني',
+    email_registered:'البريد المسجّل',
+    email_used_for:'يُستخدم لاستعادة رمز PIN',
+    edit:'تعديل',
+    income_section:'💰 الدخل الشهري',
+    current_income:'الدخل الحالي',
+    income_used_for:'يُستخدم لحساب الرصيد والنسب',
+    not_set:'غير محدد',
+    back:'← رجوع',
+    save:'حفظ',
+    // Add expense
+    add_transaction:'➕ إضافة معاملة',
+    expense:'مصروف',
+    income_label:'دخل',
+    amount:'المبلغ',
+    category:'الفئة',
+    note:'ملاحظة',
+    date:'التاريخ',
+    add_btn:'إضافة',
+    // Reports
+    reports:'📊 التقارير',
+    monthly_summary:'الملخص الشهري',
+    // Tips
+    tips:'💡 نصائح مالية',
+    // Alerts
+    budget_exceeded:'مصاريفك تجاوزت %s% من دخلك!',
+    goal_half:'وصلت لـ 50% من هدف الادخار! 🎉',
+    lang_changed:'✅ تم تغيير اللغة إلى العربية',
+  },
+  en: {
+    dir:'ltr', fontDir:'ltr',
+    nav_home:'Home', nav_reports:'Reports', nav_add:'Add',
+    nav_tips:'Tips', nav_account:'Account',
+    available_balance:'Available Balance',
+    from_total:'of total',
+    expenses:'Expenses',
+    transactions_this_month:'transactions this month',
+    savings:'Savings',
+    savings_buckets:'savings buckets',
+    goals:'Goals',
+    goals_completed:'goal — %s% complete',
+    debts:'Debts',
+    active_loan:'one active loan',
+    investments:'Investments',
+    active_portfolio:'active portfolio',
+    settings:'⚙️ Settings',
+    personal_info:'👤 Personal Info',
+    preferences:'🎨 Preferences',
+    language:'🌐 Language',
+    currency:'💱 Currency',
+    dark_mode:'🌙 Dark Mode',
+    notifications:'🔔 Notifications',
+    budget_alerts:'📊 Budget Alerts',
+    pin_security:'🔒 PIN Code',
+    pin_enable:'Enable',
+    pin_disable:'Disable',
+    email_section:'📧 Email',
+    email_registered:'Registered email',
+    email_used_for:'Used to recover PIN',
+    edit:'Edit',
+    income_section:'💰 Monthly Income',
+    current_income:'Current income',
+    income_used_for:'Used to calculate balance & ratios',
+    not_set:'Not set',
+    back:'← Back',
+    save:'Save',
+    add_transaction:'➕ Add Transaction',
+    expense:'Expense',
+    income_label:'Income',
+    amount:'Amount',
+    category:'Category',
+    note:'Note',
+    date:'Date',
+    add_btn:'Add',
+    reports:'📊 Reports',
+    monthly_summary:'Monthly Summary',
+    tips:'💡 Financial Tips',
+    budget_exceeded:'Your expenses exceeded %s% of your income!',
+    goal_half:'You reached 50% of your savings goal! 🎉',
+    lang_changed:'✅ Language changed to English',
+  },
+  de: {
+    dir:'ltr', fontDir:'ltr',
+    nav_home:'Startseite', nav_reports:'Berichte', nav_add:'Hinzufügen',
+    nav_tips:'Tipps', nav_account:'Konto',
+    available_balance:'Verfügbares Guthaben',
+    from_total:'von gesamt',
+    expenses:'Ausgaben',
+    transactions_this_month:'Transaktionen diesen Monat',
+    savings:'Ersparnisse',
+    savings_buckets:'Sparkonten',
+    goals:'Ziele',
+    goals_completed:'Ziel — %s% abgeschlossen',
+    debts:'Schulden',
+    active_loan:'ein aktiver Kredit',
+    investments:'Investitionen',
+    active_portfolio:'aktives Portfolio',
+    settings:'⚙️ Einstellungen',
+    personal_info:'👤 Persönliche Daten',
+    preferences:'🎨 Einstellungen',
+    language:'🌐 Sprache',
+    currency:'💱 Währung',
+    dark_mode:'🌙 Dunkelmodus',
+    notifications:'🔔 Benachrichtigungen',
+    budget_alerts:'📊 Budget-Warnungen',
+    pin_security:'🔒 PIN-Code',
+    pin_enable:'Aktivieren',
+    pin_disable:'Deaktivieren',
+    email_section:'📧 E-Mail',
+    email_registered:'Registrierte E-Mail',
+    email_used_for:'Zur PIN-Wiederherstellung',
+    edit:'Bearbeiten',
+    income_section:'💰 Monatliches Einkommen',
+    current_income:'Aktuelles Einkommen',
+    income_used_for:'Zur Berechnung von Guthaben & Verhältnissen',
+    not_set:'Nicht festgelegt',
+    back:'← Zurück',
+    save:'Speichern',
+    add_transaction:'➕ Transaktion hinzufügen',
+    expense:'Ausgabe',
+    income_label:'Einkommen',
+    amount:'Betrag',
+    category:'Kategorie',
+    note:'Notiz',
+    date:'Datum',
+    add_btn:'Hinzufügen',
+    reports:'📊 Berichte',
+    monthly_summary:'Monatliche Zusammenfassung',
+    tips:'💡 Finanztipps',
+    budget_exceeded:'Ihre Ausgaben überstiegen %s% Ihres Einkommens!',
+    goal_half:'Sie haben 50% Ihres Sparziels erreicht! 🎉',
+    lang_changed:'✅ Sprache auf Deutsch geändert',
+  },
+};
+
+function t(key, val){ 
+  const lang = state.lang||'ar';
+  const tr = (APP_T[lang]||APP_T.ar)[key]||APP_T.ar[key]||key;
+  return val!==undefined ? tr.replace('%s', val) : tr;
+}
+
+function changeLang(lang){
+  state.lang = lang;
+  saveState();
+  // Update page direction
+  document.documentElement.setAttribute('dir', APP_T[lang]?.dir||'rtl');
+  document.documentElement.setAttribute('lang', lang==='ar'?'ar':lang==='de'?'de':'en');
+  render();
+  toast(t('lang_changed'));
+}
+
+function applyAppLang(){
+  const lang = state.lang||'ar';
+  const dir  = APP_T[lang]?.dir||'rtl';
+  document.documentElement.setAttribute('dir', dir);
+  document.documentElement.setAttribute('lang', lang==='ar'?'ar':lang==='de'?'de':'en');
+  // Apply dir to all main sections
+  ['main-content','bottom-nav'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.setAttribute('dir',dir);
+  });
+  // Bottom nav labels
+  const navMap = [
+    ['nav-lbl-home', t('nav_home')],
+    ['nav-lbl-reports', t('nav_reports')],
+    ['nav-lbl-add', t('nav_add')],
+    ['nav-lbl-tips', t('nav_tips')],
+    ['nav-lbl-account', t('nav_account')],
+  ];
+  navMap.forEach(([id, txt])=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent=txt;
+  });
+  // Settings page title
+  const stEl=document.getElementById('settings-title-lbl');
+  if(stEl) stEl.textContent=t('settings');
+  // Back button
+  document.querySelectorAll('.back-btn').forEach(btn=>{
+    if(btn.textContent.trim()==='← رجوع'||btn.textContent.trim()==='← Back'||btn.textContent.trim()==='← Zurück')
+      btn.textContent=t('back');
+  });
+}
+
+
 // ══════════════════════════════════════════════════════════
 //  i18n — REGISTER PAGE TRANSLATIONS
 // ══════════════════════════════════════════════════════════
@@ -532,6 +751,7 @@ function render(){
   else if(state.page==='settings') c.innerHTML=renderSettings();
   else if(state.page==='receipts') c.innerHTML=renderReceipts();
   else if(state.page==='compare')  c.innerHTML=renderCompare();
+  applyAppLang();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1196,7 +1416,7 @@ function renderSettings(){
   return `
     <div class="top-header">
       <button onclick="navigate('account')" class="back-btn">← رجوع</button>
-      <div class="user-name">⚙️ الإعدادات</div>
+      <div class="user-name" id="settings-title-lbl">⚙️ الإعدادات</div>
     </div>
     <div class="sec-head">👤 المعلومات الشخصية</div>
     <div class="settings-section">
@@ -1213,7 +1433,18 @@ function renderSettings(){
     </div>
     <div class="sec-head">🎨 التفضيلات</div>
     <div class="settings-section">
-      <div class="setting-row"><span class="sr-label">العملة</span>
+      <div class="setting-row">
+        <span class="sr-label" id="sl-lang-lbl">🌐 اللغة</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          <button onclick="changeLang('ar')" id="sl-btn-ar"
+            style="border:2px solid ${state.lang==='ar'?'var(--primary)':'var(--border)'};background:${state.lang==='ar'?'var(--primary-l)':'var(--surface)'};color:${state.lang==='ar'?'var(--primary)':'var(--text)'};border-radius:10px;padding:5px 12px;font-family:Cairo,sans-serif;font-size:.82rem;font-weight:700;cursor:pointer">🇸🇦 عربي</button>
+          <button onclick="changeLang('en')" id="sl-btn-en"
+            style="border:2px solid ${state.lang==='en'?'var(--primary)':'var(--border)'};background:${state.lang==='en'?'var(--primary-l)':'var(--surface)'};color:${state.lang==='en'?'var(--primary)':'var(--text)'};border-radius:10px;padding:5px 12px;font-family:Cairo,sans-serif;font-size:.82rem;font-weight:700;cursor:pointer">🇬🇧 English</button>
+          <button onclick="changeLang('de')" id="sl-btn-de"
+            style="border:2px solid ${state.lang==='de'?'var(--primary)':'var(--border)'};background:${state.lang==='de'?'var(--primary-l)':'var(--surface)'};color:${state.lang==='de'?'var(--primary)':'var(--text)'};border-radius:10px;padding:5px 12px;font-family:Cairo,sans-serif;font-size:.82rem;font-weight:700;cursor:pointer">🇩🇪 Deutsch</button>
+        </div>
+      </div>
+      <div class="setting-row"><span class="sr-label" id="sl-cur-lbl">💱 العملة</span>
         <select onchange="state.currency=this.value;saveState();render()" style="border:1.5px solid var(--border);border-radius:9px;padding:5px 10px;font-family:Cairo,sans-serif;background:var(--surface);color:var(--text)">
           ${['€','$','£','﷼','د.إ','TL'].map(x=>`<option ${state.currency===x?'selected':''}>${x}</option>`).join('')}
         </select></div>
