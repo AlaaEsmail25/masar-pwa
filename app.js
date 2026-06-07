@@ -106,76 +106,63 @@ const REG_T = {
 function getRegT(){ return REG_T[regLang]||REG_T.ar; }
 
 function renderRegisterForm(){
-  const t = getRegT();
+  const t   = getRegT();
   const dir = t.dir;
-  // Preserve typed values across re-renders
-  const curName  = document.getElementById('r-name')?.value  || '';
-  const curInc   = document.getElementById('r-income')?.value || '';
-  const curEmail = document.getElementById('r-email')?.value  || '';
+  const reg = document.getElementById('register');
+  const body= document.getElementById('reg-body-area');
+  if(!reg || !body) return;
 
-  // Update hero text
+  // Set page direction
+  reg.setAttribute('dir', dir);
+  body.setAttribute('dir', dir);
+
+  // Update hero
   const heroTitle = document.getElementById('reg-hero-title');
   const heroSub   = document.getElementById('reg-hero-sub');
   if(heroTitle) heroTitle.textContent = t.heroTitle;
   if(heroSub)   heroSub.textContent   = t.heroSub;
 
-  // Dynamic name placeholder: typed name or default
-  const namePH = curName.trim() ? curName.trim() : t.namePlaceholder;
+  // Update all text labels
+  const setText = (id, txt) => { const el=document.getElementById(id); if(el) el.textContent=txt; };
+  setText('reg-step-txt',    t.step);
+  setText('reg-heading-txt', t.heading);
+  setText('reg-income-label',t.incomeLabel);
+  setText('reg-income-opt',  ' ' + t.incomeOpt);
+  setText('reg-email-label', t.emailLabel);
+  setText('reg-email-opt',   ' ' + t.emailOpt);
+  setText('reg-lang-label',  t.langLabel);
+  setText('reg-cur-label',   t.curLabel);
+  setText('reg-start-btn',   t.startBtn);
 
-  document.getElementById('reg-body-area').innerHTML = `
-    <div class="reg-step" style="direction:${dir}">${t.step}</div>
-    <h2 style="direction:${dir}">${t.heading}</h2>
+  // Update name label (keep the * span)
+  const nameLbl = document.getElementById('reg-name-label');
+  if(nameLbl) nameLbl.innerHTML = t.nameLabel + ' <span style="color:var(--red);font-size:.8rem">*</span>';
 
-    <div class="form-group" style="direction:${dir}">
-      <label>${t.nameLabel} <span style="color:var(--red);font-size:.8rem">${t.nameRequired}</span></label>
-      <input type="text" id="r-name" placeholder="${namePH}" autocomplete="name"
-        value="${curName.replace(/"/g,'&quot;')}"
-        oninput="updateNamePlaceholder(this)"
-        style="direction:${dir}">
-    </div>
+  // Update placeholders
+  const nameEl   = document.getElementById('r-name');
+  const incomeEl = document.getElementById('r-income');
+  if(nameEl && !nameEl.value.trim())   nameEl.placeholder   = t.namePlaceholder;
+  if(incomeEl) incomeEl.placeholder = t.incomePlaceholder;
 
-    <div class="form-group" style="direction:${dir}">
-      <label>${t.incomeLabel}
-        <span style="color:var(--muted);font-weight:600;font-size:.75rem"> ${t.incomeOpt}</span>
-      </label>
-      <input type="number" id="r-income" placeholder="${t.incomePlaceholder}" min="0" step="50"
-        value="${curInc}" style="direction:${dir}">
-    </div>
+  // Update currency labels based on language
+  const curLabels = {
+    '€' : dir==='rtl'?'€ يورو':'€ Euro',
+    '$' : dir==='rtl'?'$ دولار':'$ Dollar',
+    '£' : dir==='rtl'?'£ جنيه':'£ Pound',
+    '﷼' : dir==='rtl'?'﷼ ريال':'﷼ Riyal',
+    'د.إ': dir==='rtl'?'د.إ درهم':'د.إ Dirham',
+    'TL' : dir==='rtl'?'TL ليرة':'TL Lira',
+  };
+  document.querySelectorAll('#cur-grid .opt-btn').forEach(btn=>{
+    const lbl = curLabels[btn.dataset.val];
+    if(lbl) btn.textContent = lbl;
+    btn.classList.toggle('selected', btn.dataset.val===regCur);
+  });
 
-    <div class="form-group" style="direction:${dir}">
-      <label>${t.emailLabel}
-        <span style="color:var(--muted);font-weight:600;font-size:.75rem"> ${t.emailOpt}</span>
-      </label>
-      <input type="email" id="r-email" placeholder="${t.emailPlaceholder}" autocomplete="email"
-        value="${curEmail.replace(/"/g,'&quot;')}" style="direction:ltr;text-align:${dir==='rtl'?'right':'left'}">
-    </div>
-
-    <div class="form-group" style="direction:${dir}">
-      <label>${t.langLabel}</label>
-      <div class="opt-group" id="lang-grid">
-        <button class="opt-btn ${regLang==='ar'?'selected':''}" data-val="ar" onclick="selectOpt(this,'lang')">🇸🇦 عربي</button>
-        <button class="opt-btn ${regLang==='de'?'selected':''}" data-val="de" onclick="selectOpt(this,'lang')">🇩🇪 Deutsch</button>
-        <button class="opt-btn ${regLang==='en'?'selected':''}" data-val="en" onclick="selectOpt(this,'lang')">🇬🇧 English</button>
-      </div>
-    </div>
-
-    <div class="form-group" style="direction:${dir}">
-      <label>${t.curLabel}</label>
-      <div class="opt-group" id="cur-grid">
-        <button class="opt-btn ${regCur==='€'?'selected':''}"   data-val="€"   onclick="selectOpt(this,'cur')">€ ${dir==='rtl'?'يورو':'Euro'}</button>
-        <button class="opt-btn ${regCur==='$'?'selected':''}"   data-val="$"   onclick="selectOpt(this,'cur')">$ ${dir==='rtl'?'دولار':'Dollar'}</button>
-        <button class="opt-btn ${regCur==='£'?'selected':''}"   data-val="£"   onclick="selectOpt(this,'cur')">£ ${dir==='rtl'?'جنيه':'Pound'}</button>
-        <button class="opt-btn ${regCur==='﷼'?'selected':''}"  data-val="﷼"  onclick="selectOpt(this,'cur')">﷼ ${dir==='rtl'?'ريال':'Riyal'}</button>
-        <button class="opt-btn ${regCur==='د.إ'?'selected':''}" data-val="د.إ" onclick="selectOpt(this,'cur')">د.إ ${dir==='rtl'?'درهم':'Dirham'}</button>
-        <button class="opt-btn ${regCur==='TL'?'selected':''}"  data-val="TL"  onclick="selectOpt(this,'cur')">TL ${dir==='rtl'?'ليرة':'Lira'}</button>
-      </div>
-    </div>
-
-    <button class="btn-primary" onclick="completeRegister()" style="direction:${dir}">${t.startBtn}</button>
-  `;
-
-  // Set page direction
-  document.getElementById('register').setAttribute('dir', dir);
+  // Sync lang buttons selection
+  document.querySelectorAll('#lang-grid .opt-btn').forEach(btn=>{
+    btn.classList.toggle('selected', btn.dataset.val===regLang);
+  });
 }
 
 function updateNamePlaceholder(input){
