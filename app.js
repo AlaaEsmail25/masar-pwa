@@ -855,7 +855,17 @@ function renderAdd(){
   const sub=state.addSub;
 
   if(sub==='expense'){
-    const cats=['🏠 سكن','🍔 طعام','🚗 مواصلات','💊 صحة','📚 تعليم','🎮 ترفيه','👗 ملابس','💡 فواتير','📦 أخرى'];
+    // ── تصنيفات الإلزاميات أولاً ثم الاختياريات ──
+  const cats=[
+    // إلزاميات شهرية
+    '🏠 إيجار','⚡ كهرباء','🌐 إنترنت','🛡️ تأمين','📱 شريحة هاتف',
+    // أساسيات
+    '🍽️ طعام وشراب','🚗 مواصلات','💊 صحة وصيدلية',
+    // التزامات
+    '📄 عقد','💳 قرض/رسوم',
+    // اختيارية
+    '📚 تعليم','🎮 ترفيه','👗 ملابس','🎁 هدايا','✈️ سفر','📦 أخرى'
+  ];
     const catTotals={};
     state.expenses.forEach(e=>{catTotals[e.cat]=(catTotals[e.cat]||0)+e.amount;});
     let bw='';
@@ -868,7 +878,13 @@ function renderAdd(){
       </div>`).join('');
     formHTML=`${bw}<div class="form-wrap"><div class="form-card">
       <div class="form-title">➕ إضافة مصروف</div>
-      <div class="form-group"><label>التصنيف</label><select id="f-cat">${cats.map(x=>`<option>${x}</option>`).join('')}</select></div>
+      <div class="form-group"><label>التصنيف</label>
+        <select id="f-cat" onchange="toggleContractField(this.value)">${cats.map(x=>`<option>${x}</option>`).join('')}</select>
+      </div>
+      <div class="form-group" id="contract-name-group" style="display:none">
+        <label>📄 اسم العقد / الالتزام</label>
+        <input type="text" id="f-contract" placeholder="مثال: عقد إيجار، Netflix، قسط سيارة...">
+      </div>
       <div class="form-group"><label>المبلغ (${c})</label><input type="number" id="f-amt" placeholder="0.00" min="0" step="0.01"></div>
       <div class="form-group"><label>التاريخ</label><input type="date" id="f-date" value="${today()}"></div>
       <div class="form-group"><label>ملاحظة</label><input type="text" id="f-note" placeholder="اختياري"></div>
@@ -935,7 +951,10 @@ function renderAdd(){
     ${list?`<div class="sec-head">💳 الديون — ${fmt(state.debts.reduce((a,d)=>a+(d.total-(d.paid||0)),0))} ${c}</div><div class="list-wrap">${list}</div>`:''}`;
 
   } else if(sub==='investment'){
-    const platforms=['Trade Republic','Scalable Capital','Bitpanda','DEGIRO','أخرى'];
+    const platforms=[
+      'Trade Republic','Scalable Capital','DEGIRO','Bitpanda','eToro',
+      'Interactive Brokers','XTB','Swissquote','أخرى'
+    ];
     const list=state.investments.slice().reverse().map((inv,i)=>`
       <div class="list-item">
         <button class="li-del" onclick="delItem('investments',${state.investments.length-1-i})">🗑️</button>
@@ -1061,7 +1080,21 @@ function renderReceipts(){ navigate('add','receipt'); return ''; }
 // ══════════════════════════════════════════════════════════
 //  CRUD
 // ══════════════════════════════════════════════════════════
-function addExpense(){ const cat=document.getElementById('f-cat')?.value; const amt=parseFloat(document.getElementById('f-amt')?.value); if(!amt||amt<=0){toast('⚠️ أدخل مبلغاً صحيحاً');return;} state.expenses.push({cat,amount:amt,date:document.getElementById('f-date')?.value,note:document.getElementById('f-note')?.value}); saveState();toast('✅ تم حفظ المصروف');render(); }
+
+function toggleContractField(val){
+  const g=document.getElementById('contract-name-group');
+  if(g) g.style.display=(val&&val.includes('عقد'))?'block':'none';
+}
+function addExpense(){
+  const cat=document.getElementById('f-cat')?.value;
+  const amt=parseFloat(document.getElementById('f-amt')?.value);
+  if(!amt||amt<=0){toast('⚠️ أدخل مبلغاً صحيحاً');return;}
+  const contractName=document.getElementById('f-contract')?.value.trim()||'';
+  const rawNote=document.getElementById('f-note')?.value||'';
+  const note=contractName?(contractName+(rawNote?' — '+rawNote:'')):rawNote;
+  state.expenses.push({cat,amount:amt,date:document.getElementById('f-date')?.value,note});
+  saveState();toast('✅ تم حفظ المصروف');render();
+}
 function addSaving(){ const name=document.getElementById('f-name')?.value; const amt=parseFloat(document.getElementById('f-amt')?.value); if(!name||!amt||amt<=0){toast('⚠️ أكمل البيانات');return;} state.savings.push({name,amount:amt,date:document.getElementById('f-date')?.value}); saveState();toast('✅ تم الحفظ');render(); }
 function addGoal(){ const name=document.getElementById('f-name')?.value; const target=parseFloat(document.getElementById('f-target')?.value); const saved=parseFloat(document.getElementById('f-saved')?.value)||0; if(!name||!target||target<=0){toast('⚠️ أكمل البيانات');return;} state.goals.push({name,target,saved}); saveState();toast('✅ تم الحفظ');render(); }
 function addDebt(){ const name=document.getElementById('f-name')?.value; const total=parseFloat(document.getElementById('f-total')?.value); const paid=parseFloat(document.getElementById('f-paid')?.value)||0; const monthly=parseFloat(document.getElementById('f-monthly')?.value)||0; if(!name||!total||total<=0){toast('⚠️ أكمل البيانات');return;} state.debts.push({name,total,paid,monthly}); saveState();toast('✅ تم الحفظ');render(); }
@@ -1114,7 +1147,7 @@ function renderReports(){
     <button class="compare-btn" onclick="navigate('compare')">📊 مقارنة الأشهر ←</button>
     <div class="kpi-grid">${kpiHTML}</div>
     ${catHTML?`<div class="sec-head">🧾 المصاريف حسب التصنيف</div><div style="padding:0 12px">${catHTML}</div>`:''}
-    <div style="padding:12px"><button class="btn-primary" onclick="generatePDF()">📤 مشاركة التقرير PDF</button><button class="btn-primary" style="background:var(--surface);color:var(--text);border:1.5px solid var(--border);margin-top:8px" onclick="exportData()">📥 تصدير البيانات JSON</button></div>`;
+    <div style="padding:12px"><button class="btn-primary" onclick="generatePDF()">📤 مشاركة التقرير PDF</button><button class="btn-primary" style="background:var(--surface);color:var(--primary);border:1.5px solid var(--primary);margin-top:8px" onclick="exportFullPDF()">📄 حفظ التقرير PDF</button></div>`;
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1290,15 +1323,73 @@ function generatePDF(){
   toast('📤 جارٍ مشاركة التقرير...');
 }
 
-function exportData(){
-  const blob=new Blob([JSON.stringify({...state,avatar:undefined},null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`masar-${today()}.json`;a.click();
-  toast('📥 تم تصدير البيانات!');
+
+function exportFullPDF(){
+  const c=state.currency;
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'});
+  const monthKey=now.toISOString().slice(0,7);
+  const monthExp=state.expenses.filter(e=>e.date&&e.date.startsWith(monthKey));
+  const totalExp=monthExp.reduce((s,e)=>s+e.amount,0);
+  const totalSav=state.savings.reduce((s,x)=>s+x.amount,0);
+  const totalDebt=state.debts.reduce((s,d)=>s+(d.amount-d.paid),0);
+  const balance=state.income>0?(state.income-totalExp):0;
+
+  // بناء محتوى HTML للطباعة
+  const catMap={};
+  monthExp.forEach(e=>{ catMap[e.cat]=(catMap[e.cat]||0)+e.amount; });
+  const catRows=Object.entries(catMap).sort((a,b)=>b[1]-a[1])
+    .map(([cat,amt])=>`<tr><td>${cat}</td><td style="text-align:left;font-weight:700">${fmt(amt)} ${c}</td></tr>`).join('');
+
+  const expRows=monthExp.slice().reverse()
+    .map(e=>`<tr><td>${e.date||''}</td><td>${e.cat}</td><td style="text-align:left">${e.note||'—'}</td><td style="text-align:left;font-weight:700">${fmt(e.amount)} ${c}</td></tr>`).join('');
+
+  const win=window.open('','_blank');
+  if(!win){toast('⚠️ افتح المتصفح للطباعة');return;}
+  win.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar">
+<head><meta charset="UTF-8">
+<title>تقرير مسار — ${dateStr}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Cairo,sans-serif;color:#1a1a1a;background:#fff;padding:24px;direction:rtl}
+  .header{background:linear-gradient(135deg,#0b7a7f,#09565a);color:#fff;padding:24px;border-radius:14px;margin-bottom:20px;text-align:center}
+  .header h1{font-size:1.8rem;font-weight:900;margin-bottom:4px}
+  .header p{opacity:.85;font-size:.9rem}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .kpi{background:#f4f7f8;border-radius:12px;padding:16px;text-align:center}
+  .kpi-val{font-size:1.3rem;font-weight:900;color:#0b7a7f}
+  .kpi-lbl{font-size:.75rem;color:#666;margin-top:4px}
+  h2{font-size:1rem;font-weight:800;color:#0b7a7f;margin:16px 0 8px;padding-bottom:4px;border-bottom:2px solid #e0f0f0}
+  table{width:100%;border-collapse:collapse;font-size:.85rem;margin-bottom:12px}
+  th{background:#0b7a7f;color:#fff;padding:8px;text-align:right;font-weight:700}
+  td{padding:7px 8px;border-bottom:1px solid #f0f0f0}
+  tr:nth-child(even) td{background:#f9fffe}
+  .footer{text-align:center;color:#999;font-size:.75rem;margin-top:24px;padding-top:12px;border-top:1px solid #eee}
+  @media print{body{padding:0}.no-print{display:none}}
+</style>
+</head><body>
+<div class="header">
+  <h1>📊 تقرير مسار المالي</h1>
+  <p>${state.name} — ${dateStr}</p>
+</div>
+<div class="kpis">
+  <div class="kpi"><div class="kpi-val">${fmt(state.income||0)} ${c}</div><div class="kpi-lbl">الدخل الشهري</div></div>
+  <div class="kpi"><div class="kpi-val">${fmt(totalExp)} ${c}</div><div class="kpi-lbl">إجمالي المصاريف</div></div>
+  <div class="kpi"><div class="kpi-val">${fmt(balance)} ${c}</div><div class="kpi-lbl">الرصيد المتاح</div></div>
+  <div class="kpi"><div class="kpi-val">${fmt(totalSav)} ${c}</div><div class="kpi-lbl">إجمالي المدخرات</div></div>
+</div>
+<h2>📂 المصاريف حسب التصنيف</h2>
+<table><thead><tr><th>التصنيف</th><th>الإجمالي</th></tr></thead><tbody>${catRows||'<tr><td colspan="2" style="text-align:center;color:#999">لا توجد بيانات</td></tr>'}</tbody></table>
+<h2>🧾 تفاصيل المعاملات</h2>
+<table><thead><tr><th>التاريخ</th><th>التصنيف</th><th>الملاحظة</th><th>المبلغ</th></tr></thead><tbody>${expRows||'<tr><td colspan="4" style="text-align:center;color:#999">لا توجد معاملات</td></tr>'}</tbody></table>
+${totalDebt>0?`<h2>💳 الديون النشطة</h2><table><thead><tr><th>الاسم</th><th>المتبقي</th></tr></thead><tbody>${state.debts.filter(d=>d.amount>d.paid).map(d=>`<tr><td>${d.name||'قرض'}</td><td>${fmt(d.amount-d.paid)} ${c}</td></tr>`).join('')}</tbody></table>`:''}
+<div class="footer">تم إنشاء هذا التقرير بواسطة تطبيق مسار — ${dateStr}</div>
+<script>window.onload=()=>{window.print();}<\/script>
+</body></html>`);
+  win.document.close();
 }
 
-// ══════════════════════════════════════════════════════════
-//  TIPS / CHAT
-// ══════════════════════════════════════════════════════════
 function renderTips(){
   const c=state.currency;
   if(!state.chat.length) state.chat=[{role:'ai',text:`مرحباً ${state.name}! 👋 أنا مساعدك المالي الذكي. اسألني عن الادخار، الاستثمار، أو كيف تحسّن وضعك المالي 💰`}];
@@ -1405,7 +1496,7 @@ function renderAccount(){
 // ══════════════════════════════════════════════════════════
 function renderSettings(){
   const c=state.currency;
-  const cats=['🏠 سكن','🍔 طعام','🚗 مواصلات','💊 صحة','📚 تعليم','🎮 ترفيه','👗 ملابس','💡 فواتير','📦 أخرى'];
+  const cats=['🏠 إيجار','⚡ كهرباء','🌐 إنترنت','🛡️ تأمين','📱 شريحة هاتف','🍽️ طعام وشراب','🚗 مواصلات','💊 صحة وصيدلية','📄 عقد','💳 قرض/رسوم','📚 تعليم','🎮 ترفيه','👗 ملابس','🎁 هدايا','✈️ سفر','📦 أخرى'];
   const budgetRows=cats.map(cat=>`
     <div class="setting-row">
       <span class="sr-label">${cat}</span>
