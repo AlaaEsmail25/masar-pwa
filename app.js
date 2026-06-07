@@ -36,6 +36,157 @@ function getMonthKey(dateStr){ return dateStr?(dateStr.slice(0,7)):''; }
 function calcGoalsPct(){ if(!state.goals.length)return 0; return Math.round(state.goals.reduce((a,g)=>a+Math.min((g.saved||0)/g.target*100,100),0)/state.goals.length); }
 function metricToSub(t){ return{المصاريف:'expense',المدخرات:'saving',الأهداف:'goal',الديون:'debt',الاستثمارات:'investment'}[t]||'expense'; }
 
+
+// ══════════════════════════════════════════════════════════
+//  i18n — REGISTER PAGE TRANSLATIONS
+// ══════════════════════════════════════════════════════════
+const REG_T = {
+  ar: {
+    dir:'rtl',
+    heroTitle:'أهلاً وسهلاً!',
+    heroSub:'أنشئ حسابك لتبدأ رحلتك المالية الذكية',
+    step:'إعداد الحساب — يستغرق أقل من دقيقة',
+    heading:'أهلاً! أخبرنا عنك 👋',
+    nameLabel:'👤 اسمك',
+    nameRequired:'*',
+    namePlaceholder:'اسم المستخدم',
+    incomeLabel:'💰 دخلك الشهري',
+    incomeOpt:'— اختياري',
+    incomePlaceholder:'يمكن إضافته لاحقاً',
+    emailLabel:'📧 بريدك الإلكتروني',
+    emailOpt:'— اختياري، مطلوب لاستعادة رمز PIN',
+    emailPlaceholder:'example@email.com',
+    langLabel:'🌐 اللغة',
+    curLabel:'💱 العملة',
+    startBtn:'🚀 ابدأ رحلتي المالية',
+    nameRequiredMsg:'⚠️ أدخل اسمك أولاً',
+  },
+  en: {
+    dir:'ltr',
+    heroTitle:'Welcome!',
+    heroSub:'Create your account to start your smart financial journey',
+    step:'Account setup — takes less than a minute',
+    heading:'Hello! Tell us about you 👋',
+    nameLabel:'👤 Your name',
+    nameRequired:'*',
+    namePlaceholder:'Username',
+    incomeLabel:'💰 Monthly income',
+    incomeOpt:'— optional',
+    incomePlaceholder:'Can be added later',
+    emailLabel:'📧 Your email',
+    emailOpt:'— optional, needed to recover PIN',
+    emailPlaceholder:'example@email.com',
+    langLabel:'🌐 Language',
+    curLabel:'💱 Currency',
+    startBtn:'🚀 Start my financial journey',
+    nameRequiredMsg:'⚠️ Please enter your name first',
+  },
+  de: {
+    dir:'ltr',
+    heroTitle:'Willkommen!',
+    heroSub:'Erstelle dein Konto für deine smarte Finanzreise',
+    step:'Kontoeinrichtung — dauert weniger als eine Minute',
+    heading:'Hallo! Erzähl uns von dir 👋',
+    nameLabel:'👤 Dein Name',
+    nameRequired:'*',
+    namePlaceholder:'Benutzername',
+    incomeLabel:'💰 Monatliches Einkommen',
+    incomeOpt:'— optional',
+    incomePlaceholder:'Kann später hinzugefügt werden',
+    emailLabel:'📧 Deine E-Mail',
+    emailOpt:'— optional, für PIN-Wiederherstellung',
+    emailPlaceholder:'beispiel@email.com',
+    langLabel:'🌐 Sprache',
+    curLabel:'💱 Währung',
+    startBtn:'🚀 Meine Finanzreise starten',
+    nameRequiredMsg:'⚠️ Bitte gib zuerst deinen Namen ein',
+  },
+};
+
+function getRegT(){ return REG_T[regLang]||REG_T.ar; }
+
+function renderRegisterForm(){
+  const t = getRegT();
+  const dir = t.dir;
+  // Preserve typed values across re-renders
+  const curName  = document.getElementById('r-name')?.value  || '';
+  const curInc   = document.getElementById('r-income')?.value || '';
+  const curEmail = document.getElementById('r-email')?.value  || '';
+
+  // Update hero text
+  const heroTitle = document.getElementById('reg-hero-title');
+  const heroSub   = document.getElementById('reg-hero-sub');
+  if(heroTitle) heroTitle.textContent = t.heroTitle;
+  if(heroSub)   heroSub.textContent   = t.heroSub;
+
+  // Dynamic name placeholder: typed name or default
+  const namePH = curName.trim() ? curName.trim() : t.namePlaceholder;
+
+  document.getElementById('reg-body-area').innerHTML = `
+    <div class="reg-step" style="direction:${dir}">${t.step}</div>
+    <h2 style="direction:${dir}">${t.heading}</h2>
+
+    <div class="form-group" style="direction:${dir}">
+      <label>${t.nameLabel} <span style="color:var(--red);font-size:.8rem">${t.nameRequired}</span></label>
+      <input type="text" id="r-name" placeholder="${namePH}" autocomplete="name"
+        value="${curName.replace(/"/g,'&quot;')}"
+        oninput="updateNamePlaceholder(this)"
+        style="direction:${dir}">
+    </div>
+
+    <div class="form-group" style="direction:${dir}">
+      <label>${t.incomeLabel}
+        <span style="color:var(--muted);font-weight:600;font-size:.75rem"> ${t.incomeOpt}</span>
+      </label>
+      <input type="number" id="r-income" placeholder="${t.incomePlaceholder}" min="0" step="50"
+        value="${curInc}" style="direction:${dir}">
+    </div>
+
+    <div class="form-group" style="direction:${dir}">
+      <label>${t.emailLabel}
+        <span style="color:var(--muted);font-weight:600;font-size:.75rem"> ${t.emailOpt}</span>
+      </label>
+      <input type="email" id="r-email" placeholder="${t.emailPlaceholder}" autocomplete="email"
+        value="${curEmail.replace(/"/g,'&quot;')}" style="direction:ltr;text-align:${dir==='rtl'?'right':'left'}">
+    </div>
+
+    <div class="form-group" style="direction:${dir}">
+      <label>${t.langLabel}</label>
+      <div class="opt-group" id="lang-grid">
+        <button class="opt-btn ${regLang==='ar'?'selected':''}" data-val="ar" onclick="selectOpt(this,'lang')">🇸🇦 عربي</button>
+        <button class="opt-btn ${regLang==='de'?'selected':''}" data-val="de" onclick="selectOpt(this,'lang')">🇩🇪 Deutsch</button>
+        <button class="opt-btn ${regLang==='en'?'selected':''}" data-val="en" onclick="selectOpt(this,'lang')">🇬🇧 English</button>
+      </div>
+    </div>
+
+    <div class="form-group" style="direction:${dir}">
+      <label>${t.curLabel}</label>
+      <div class="opt-group" id="cur-grid">
+        <button class="opt-btn ${regCur==='€'?'selected':''}"   data-val="€"   onclick="selectOpt(this,'cur')">€ ${dir==='rtl'?'يورو':'Euro'}</button>
+        <button class="opt-btn ${regCur==='$'?'selected':''}"   data-val="$"   onclick="selectOpt(this,'cur')">$ ${dir==='rtl'?'دولار':'Dollar'}</button>
+        <button class="opt-btn ${regCur==='£'?'selected':''}"   data-val="£"   onclick="selectOpt(this,'cur')">£ ${dir==='rtl'?'جنيه':'Pound'}</button>
+        <button class="opt-btn ${regCur==='﷼'?'selected':''}"  data-val="﷼"  onclick="selectOpt(this,'cur')">﷼ ${dir==='rtl'?'ريال':'Riyal'}</button>
+        <button class="opt-btn ${regCur==='د.إ'?'selected':''}" data-val="د.إ" onclick="selectOpt(this,'cur')">د.إ ${dir==='rtl'?'درهم':'Dirham'}</button>
+        <button class="opt-btn ${regCur==='TL'?'selected':''}"  data-val="TL"  onclick="selectOpt(this,'cur')">TL ${dir==='rtl'?'ليرة':'Lira'}</button>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="completeRegister()" style="direction:${dir}">${t.startBtn}</button>
+  `;
+
+  // Set page direction
+  document.getElementById('register').setAttribute('dir', dir);
+}
+
+function updateNamePlaceholder(input){
+  // placeholder follows the typed name in real-time
+  if(input.value.trim()){
+    input.placeholder = input.value.trim();
+  } else {
+    input.placeholder = getRegT().namePlaceholder;
+  }
+}
+
 // ══════════════════════════════════════════════════════════
 //  REGISTER
 // ══════════════════════════════════════════════════════════
@@ -44,14 +195,14 @@ function selectOpt(btn,type){
   const g=btn.closest('.opt-group');
   if(g) g.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected');
-  if(type==='lang') regLang=btn.dataset.val;
+  if(type==='lang'){ regLang=btn.dataset.val; renderRegisterForm(); return; }
   if(type==='cur')  regCur =btn.dataset.val;
 }
 function completeRegister(){
   const name=document.getElementById('r-name')?.value.trim();
   const income=parseFloat(document.getElementById('r-income')?.value)||0;
   const regEmail=(document.getElementById('r-email')?.value.trim()||'').toLowerCase();
-  if(!name){ toast('⚠️ أدخل اسمك أولاً'); return; }
+  if(!name){ toast(getRegT().nameRequiredMsg); return; }
   // income & email are optional
   state.name=name; state.income=income||0; state.currency=regCur; state.lang=regLang; state.email=regEmail; state.registered=true;
   saveState();
@@ -323,7 +474,12 @@ function initApp(){
     splash.style.transition='opacity .5s'; splash.style.opacity='0';
     setTimeout(()=>{
       splash.style.display='none';
-      if(!state.registered){ document.getElementById('register').style.display='flex'; }
+      if(!state.registered){
+        regLang = state.lang || 'ar';
+        regCur  = state.currency || '€';
+        document.getElementById('register').style.display='flex';
+        renderRegisterForm();
+      }
       else if(state.pinEnabled && state.pin){ showPinScreen('unlock'); }
       else if(!state.onboardDone){ showMainUI(); startOnboarding(); }
       else { showMainUI(); }
